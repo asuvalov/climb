@@ -1,0 +1,32 @@
+dist: bionic
+language: cpp
+compiler:
+  - gcc
+os:
+  - linux
+branches:
+  only:
+    - master
+
+matrix:
+  include:
+    - env: COMPILER=g++-8 BUILD=Release STANDARD=17
+      compiler: gcc
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:mhier/libboost-latest'
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - gcc-8
+            - g++-8
+            - boost1.67
+
+script:
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make
+  - ./bin/crypto_test
