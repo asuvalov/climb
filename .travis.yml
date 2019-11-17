@@ -30,3 +30,4 @@ script:
   - cmake -DCMAKE_BUILD_TYPE=Release ..
   - make
   - ./bin/crypto_test
+  - ./bin/elliptic_test

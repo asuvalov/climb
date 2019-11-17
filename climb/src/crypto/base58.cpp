@@ -3,48 +3,10 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#include <elliptic/bignum.hpp>
 
 namespace crypto
 {
-
-class bignum_helper
-{
-public:
-    bignum_helper() : _ctx(nullptr) {
-        _ctx = BN_CTX_new();
-        if (_ctx == nullptr)
-            throw std::runtime_error("Failed BN_CTX_new\n");
-        BN_CTX_start(_ctx);
-    }
-
-    ~bignum_helper() { BN_CTX_end(_ctx); }
-
-    BIGNUM* create_bignum() {
-        auto* bn = BN_CTX_get(_ctx);
-        if (bn == nullptr)
-            throw std::runtime_error("Failed BN_CTX_get\n");
-        return bn;
-    }
-
-    BIGNUM* create_bignum(unsigned long n) {
-        auto* bn = create_bignum();
-        if (BN_set_word(bn, n) != 1)
-            throw std::runtime_error("Failed BN_set_word\n");
-        return bn;
-    }
-
-    BIGNUM* create_bignum(const unsigned char* data, size_t size) {
-        auto* bn = create_bignum();
-        if (BN_bin2bn(data, static_cast<int>(size), bn) == nullptr)
-            throw std::runtime_error("Failed BN_bin2bn\n");
-        return bn;
-    }
-
-    BN_CTX* ctx() { return _ctx; }
-
-private:
-    BN_CTX* _ctx;
-};
 
 static const std::string base58_syms = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
