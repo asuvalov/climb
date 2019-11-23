@@ -17,7 +17,10 @@ class private_key
 public:
     private_key();
     private_key(const private_key&) = delete;
-    private_key(const crypto::sha256& secret);
+    explicit private_key(const crypto::sha256& secret);
+    explicit private_key(const std::vector<char>& data);
+    explicit private_key(const std::string& hex);
+
     ~private_key();
 
     std::vector<char> to_vector() const;
@@ -27,6 +30,9 @@ public:
 
     void set_compressed();
     void set_uncompressed();
+
+private:
+    void _create(const std::vector<char>& data);
 
 private:
     EC_KEY* _key;

@@ -26,12 +26,31 @@ private_key::private_key(const crypto::sha256& secret)
     : _key(nullptr)
     , _bn(nullptr)
 {
+    _create(secret.to_vector());
+}
+
+private_key::private_key(const std::vector<char>& data)
+    : _key(nullptr)
+    , _bn(nullptr)
+{
+    _create(data);
+}
+
+private_key::private_key(const std::string& hex)
+    : _key(nullptr)
+    , _bn(nullptr)
+{
+    _create(crypto::from_hex<char>(hex));
+}
+
+void private_key::_create(const std::vector<char>& data)
+{
     _key = EC_KEY_new_by_curve_name(NID_secp256k1);
     if (_key == nullptr)
         throw std::runtime_error("Failed EC_KEY_new_by_curve_name");
-    const auto& vec = secret.to_vector();
+
     bignum_helper bignum_helper;
-    _bn = bignum_helper.create_bignum(reinterpret_cast<const unsigned char*>(vec.data()), vec.size());
+    _bn = bignum_helper.create_bignum(reinterpret_cast<const unsigned char*>(data.data()), data.size());
 
     const EC_GROUP* group = EC_KEY_get0_group(_key);
     if (group == nullptr)
