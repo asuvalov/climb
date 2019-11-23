@@ -47,7 +47,7 @@ public:
 
     static constexpr size_t size() noexcept { return sizeof(storage_t); }
 
-    std::vector<storage_t> to_vector() const;
+    std::vector<serialize_t> to_vector() const;
     const derived_t& reverse();
 
     std::string to_hex() const { return crypto::to_hex(data(), size()); }
@@ -105,9 +105,9 @@ base_hash<storage_t, serialize_t, derived_t>::base_hash(const serialize_t* data,
 }
 
 template <typename storage_t, typename serialize_t, class derived_t>
-std::vector<storage_t> base_hash<storage_t, serialize_t, derived_t>::to_vector() const
+std::vector<serialize_t> base_hash<storage_t, serialize_t, derived_t>::to_vector() const
 {
-    std::vector<storage_t> vec;
+    std::vector<serialize_t> vec;
     vec.insert(vec.end(), cbegin(), cend());
     return vec;
 }

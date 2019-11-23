@@ -24,3 +24,16 @@ inline void write_result(const std::string& name, double secs)
 {
     std::cout << std::setw(15) << std::left << name << " took " << std::setiosflags(std::ios::fixed) << std::setprecision(8) << std::setw(10) << std::right << secs << " s." << std::endl;
 }
+
+namespace std
+{
+
+inline ostream& operator<<(ostream& os, const vector<char>& vec)
+{
+    for (auto val : vec) {
+        os << std::hex << val;
+    }
+    return os;
+}
+
+} // std
