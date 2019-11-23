@@ -32,8 +32,25 @@ private_key::private_key(const crypto::sha256& secret)
     const auto& vec = secret.to_vector();
     bignum_helper bignum_helper;
     _bn = bignum_helper.create_bignum(reinterpret_cast<const unsigned char*>(vec.data()), vec.size());
+
+    const EC_GROUP* group = EC_KEY_get0_group(_key);
+    if (group == nullptr)
+        throw std::runtime_error("Failed EC_KEY_get0_group");
+
+    EC_POINT* point = EC_POINT_new(group);
+    if (point == nullptr)
+        throw std::runtime_error("Failed EC_POINT_new");
+
+    if (1 != EC_POINT_mul(group, point, _bn, nullptr, nullptr, bignum_helper.ctx()))
+        throw std::runtime_error("Failed EC_POINT_mul");
+
     if (1 != EC_KEY_set_private_key(_key, _bn))
         throw std::runtime_error("Failed EC_KEY_set_private_key");
+
+    if (1 != EC_KEY_set_public_key(_key, point))
+        throw std::runtime_error("Failed EC_KEY_set_public_key");
+    
+    EC_POINT_free(point);
 }
 
 std::vector<char> private_key::to_vector() const
