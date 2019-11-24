@@ -73,12 +73,12 @@ std::vector<char> decode_base58(const char* data, size_t size)
     while (beg != end) {
         auto pos = base58_syms.find(*beg);
         CLIMB_THROW_IF(pos == std::string::npos);
-        
-	CLIMB_THROW_IF(1 != BN_mul(result, result, base58, bn_helper.ctx()));
+
+        CLIMB_THROW_IF(1 != BN_mul(result, result, base58, bn_helper.ctx()));
         CLIMB_THROW_IF(1 != BN_set_word(buff, pos));
         CLIMB_THROW_IF(1 != BN_add(result, result, buff));
-        
-	++beg;
+
+        ++beg;
     }
     
     auto bn_size = BN_num_bytes(result);

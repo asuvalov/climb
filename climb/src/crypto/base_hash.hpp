@@ -8,6 +8,7 @@
 
 #include <crypto/hex.hpp>
 #include <crypto/utils.hpp>
+#include <elliptic/exception.hpp>
 
 #include <openssl/sha.h>
 #include <openssl/ripemd.h>
@@ -125,23 +126,22 @@ derived_t base_hash<storage_t, serialize_t, derived_t>::from_hex(const std::stri
     return derived_t(vec.data(), vec.size());
 }
 
+#define OPENSSL_HASH(type) type##_CTX ctx; \
+                           CLIMB_THROW_IF(1 != type##_Init(&ctx)); \
+                           CLIMB_THROW_IF(1 != type##_Update(&ctx, static_cast<const void*>(data), sizeof(serialize_t) * size)); \
+                           CLIMB_THROW_IF(1 != type##_Final(reinterpret_cast<unsigned char*>(hash.data()), &ctx));
+
 template <typename storage_t, typename serialize_t, class derived_t>
 template <class V>
 derived_t base_hash<storage_t, serialize_t, derived_t>::hash(const V* data, size_t size)
 {
     derived_t hash;
 
-    if constexpr (sizeof(storage_t) == 20) {
-        RIPEMD160_CTX ctx;
-        RIPEMD160_Init(&ctx);
-        RIPEMD160_Update(&ctx, static_cast<const void*>(data), sizeof(serialize_t)*size);
-        RIPEMD160_Final(reinterpret_cast<unsigned char*>(hash.data()), &ctx);
+    if constexpr (sizeof(storage_t) == 20) { 
+        OPENSSL_HASH(RIPEMD160);
     }
-    else if constexpr (sizeof(storage_t) == 32) {
-        SHA256_CTX ctx;
-        SHA256_Init(&ctx);
-        SHA256_Update(&ctx, static_cast<const void*>(data), sizeof(serialize_t)*size);
-        SHA256_Final(reinterpret_cast<unsigned char*>(hash.data()), &ctx);
+    else if constexpr (sizeof(storage_t) == 32) { 
+        OPENSSL_HASH(SHA256);
     }
     else {
         static_assert(dependent_false<storage_t>::value);
@@ -151,3 +151,4 @@ derived_t base_hash<storage_t, serialize_t, derived_t>::hash(const V* data, size
 }
 
 } // crypto
+
