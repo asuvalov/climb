@@ -1,9 +1,11 @@
 #include <crypto/base58.hpp>
-#include <openssl/bn.h>
-#include <cmath>
-#include <algorithm>
-#include <stdexcept>
 #include <elliptic/bignum.hpp>
+#include <elliptic/exception.hpp>
+
+#include <openssl/bn.h>
+
+#include <algorithm>
+#include <cmath>
 
 namespace crypto
 {
@@ -25,8 +27,7 @@ std::string encode_base58(const unsigned char* data, size_t size)
     res.reserve(reserve_size);
 
     while (BN_cmp(data_bn, zero) == 1) {
-        if (BN_div(dv, rem, data_bn, base58, bn_helper.ctx()) != 1)
-            throw std::runtime_error("Failed BN_div\n");
+        CLIMB_THROW_IF(1 != BN_div(dv, rem, data_bn, base58, bn_helper.ctx()));
         res += base58_syms[BN_get_word(rem)];
         data_bn = dv;
     }
@@ -60,34 +61,29 @@ std::vector<char> decode_base58(const char* data, size_t size)
     BIGNUM* base58  = bn_helper.create_bignum(58); 
     BIGNUM* buff    = bn_helper.create_bignum();
 
-    auto* beg = data;
+    const auto* beg = data;
     const auto* end = beg + size;
 
-    while (beg != end) {
-        auto pos = base58_syms.find(*beg);
-        if (pos == std::string::npos)
-            throw std::runtime_error("Failed decode_base58: invalid symbol\n");
-        if (BN_mul(result, result, base58, bn_helper.ctx()) != 1)
-            throw std::runtime_error("Failed BN_mul\n");
-        if (BN_set_word(buff, pos) != 1)
-            throw std::runtime_error("Failed BN_set_word\n");
-        if (BN_add(result, result, buff) != 1)
-            throw std::runtime_error("Failed BN_add\n");
-        ++beg;
-    }
-
-    beg = data;
-
     size_t zeros_size = 0;
-    while (*beg == base58_syms[0]) {
+    while (beg != end && *beg == base58_syms[0]) {
         ++zeros_size;
         ++beg;
     }
 
-    auto bn_size = static_cast<size_t>(BN_num_bytes(result));
-    std::vector<char> bn_vec(bn_size + zeros_size, 0);
-    if (static_cast<size_t>(BN_bn2bin(result, reinterpret_cast<unsigned char*>(bn_vec.data() + zeros_size))) != bn_size)
-        throw std::runtime_error("Failed BN_bn2bin\n");
+    while (beg != end) {
+        auto pos = base58_syms.find(*beg);
+        CLIMB_THROW_IF(pos == std::string::npos);
+
+        CLIMB_THROW_IF(1 != BN_mul(result, result, base58, bn_helper.ctx()));
+        CLIMB_THROW_IF(1 != BN_set_word(buff, pos));
+        CLIMB_THROW_IF(1 != BN_add(result, result, buff));
+
+        ++beg;
+    }
+    
+    auto bn_size = BN_num_bytes(result);
+    std::vector<char> bn_vec(static_cast<size_t>(bn_size) + zeros_size, 0);
+    CLIMB_THROW_IF(bn_size != BN_bn2bin(result, reinterpret_cast<unsigned char*>(bn_vec.data() + zeros_size)));
 
     return bn_vec;
 }
@@ -98,3 +94,4 @@ std::vector<char> decode_base58(const std::string& base58)
 }
 
 } // crypto
+

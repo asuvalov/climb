@@ -35,9 +35,8 @@ private:
     void _create(const std::vector<char>& data);
 
 private:
-    EC_KEY* _key;
-    const BIGNUM* _bn;
-    
+    EC_KEY* _key; 
 };
 
 }
+

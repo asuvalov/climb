@@ -1,12 +1,13 @@
 #pragma once
 
+#include <crypto/utils.hpp>
+
 #include <vector>
 #include <string>
 #include <sstream>
 #include <charconv>
 #include <iomanip>
 #include <type_traits>
-#include <crypto/utils.hpp>
 
 namespace crypto {
 
@@ -17,7 +18,7 @@ std::vector<serialize_t> from_hex(const std::string& hex)
     auto size = hex.size()/chars_per_num;
     std::vector<serialize_t> res(size);
 
-    auto* beg = hex.c_str();
+    const auto* beg = hex.c_str();
     uint64_t val = 0UL;
     for (size_t i = 0; i < size; ++i) {
         std::from_chars<uint64_t>(beg, beg + chars_per_num, val, 16);
@@ -29,15 +30,14 @@ std::vector<serialize_t> from_hex(const std::string& hex)
 }
 
 template <typename serialize_t>
-auto* cast_to_unsigned(const serialize_t* ptr)
+const auto* cast_to_unsigned(const serialize_t* ptr)
 {
     if constexpr (std::is_same<char, serialize_t>::value || std::is_same<int8_t, serialize_t>::value)
         return reinterpret_cast<const uint8_t*>(ptr);
     else if constexpr (std::is_same<unsigned char, serialize_t>::value || std::is_same<uint8_t, serialize_t>::value)
         return ptr;
-    else {
+    else
         static_assert(dependent_false<serialize_t>::value);
-    }
 }
 
 template <typename serialize_t>
@@ -46,7 +46,7 @@ std::string to_hex(const serialize_t* data, size_t size)
     std::stringstream ss;
     ss << std::setfill('0');
 
-    auto* beg = cast_to_unsigned(data);
+    const auto* beg = cast_to_unsigned(data);
     const auto* end = beg + size;
 
     constexpr int w = 2*sizeof(*beg);
@@ -66,3 +66,4 @@ std::string to_hex(const std::vector<serialize_t>& data)
 }
 
 } // crypto
+
