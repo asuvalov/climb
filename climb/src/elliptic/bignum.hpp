@@ -1,7 +1,7 @@
 #pragma once
 
 #include <openssl/bn.h>
-#include <elliptic/exeption.hpp>
+#include <elliptic/exception.hpp>
 
 class bignum_helper
 {

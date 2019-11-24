@@ -14,3 +14,4 @@ std::vector<char> decode_base58(const char* data, size_t size);
 std::vector<char> decode_base58(const std::string& base58);
 
 } // crypto
+

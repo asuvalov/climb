@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-#include <elliptic/exeption.hpp>
+#include <elliptic/exception.hpp>
 #include <string>
 
 BOOST_AUTO_TEST_CASE(exception_test)
