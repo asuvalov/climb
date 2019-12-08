@@ -3,7 +3,7 @@
 #include <openssl/ec.h>
 #include <openssl/bn.h>
 
-#include <crypto/sha256.hpp>
+#include <crypto/hash.hpp>
 #include <elliptic/public_key.hpp>
 
 #include <vector>

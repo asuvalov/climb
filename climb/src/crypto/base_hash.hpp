@@ -16,7 +16,7 @@
 namespace crypto
 {
 
-template <typename storage_t, typename serialize_t, class derived_t>
+template <typename storage_t, typename serialize_t>
 class base_hash
 {
 public:
@@ -49,10 +49,10 @@ public:
     static constexpr size_t size() noexcept { return sizeof(storage_t); }
 
     std::vector<serialize_t> to_vector() const;
-    const derived_t& reverse();
+    const base_hash<storage_t, serialize_t>& reverse();
 
     std::string to_hex() const { return crypto::to_hex(data(), size()); }
-    static derived_t from_hex(const std::string& hex);
+    static base_hash<storage_t, serialize_t> from_hex(const std::string& hex);
 
     friend bool operator== (const base_hash& lhs, const base_hash& rhs) {
         return memcmp(static_cast<const void*>(lhs._hash), static_cast<const void*>(rhs._hash), sizeof(storage_t)) == 0;
@@ -83,47 +83,47 @@ public:
     }
 
     template <class V>
-    static derived_t hash(const std::vector<V>& data) {
+    static base_hash<storage_t, serialize_t> hash(const std::vector<V>& data) {
         return hash(reinterpret_cast<const unsigned char*>(data.data()), data.size()*sizeof(storage_t));
     }
 
-    static derived_t hash(const std::string& data) {
+    static base_hash<storage_t, serialize_t> hash(const std::string& data) {
         return hash(reinterpret_cast<const unsigned char*>(data.data()), data.size());
     }
 
     template <class V>
-    static derived_t hash(const V* data, size_t size);
+    static base_hash<storage_t, serialize_t> hash(const V* data, size_t size);
 
 protected:
     storage_t _hash;
 };
 
-template <typename storage_t, typename serialize_t, class derived_t>
-base_hash<storage_t, serialize_t, derived_t>::base_hash(const serialize_t* data, size_t size)
+template <typename storage_t, typename serialize_t>
+base_hash<storage_t, serialize_t>::base_hash(const serialize_t* data, size_t size)
 {
     assert(sizeof(serialize_t)*size == sizeof(storage_t));
     memcpy(static_cast<void*>(_hash), static_cast<const void*>(data), sizeof(storage_t));
 }
 
-template <typename storage_t, typename serialize_t, class derived_t>
-std::vector<serialize_t> base_hash<storage_t, serialize_t, derived_t>::to_vector() const
+template <typename storage_t, typename serialize_t>
+std::vector<serialize_t> base_hash<storage_t, serialize_t>::to_vector() const
 {
     std::vector<serialize_t> vec;
     vec.insert(vec.end(), cbegin(), cend());
     return vec;
 }
 
-template <typename storage_t, typename serialize_t, class derived_t>
-const derived_t& base_hash<storage_t, serialize_t, derived_t>::reverse() {
+template <typename storage_t, typename serialize_t>
+const base_hash<storage_t, serialize_t>& base_hash<storage_t, serialize_t>::reverse() {
     std::reverse(begin(), end());
-    return dynamic_cast<const derived_t&>(*this);
+    return *this;
 }
 
-template <typename storage_t, typename serialize_t, class derived_t>
-derived_t base_hash<storage_t, serialize_t, derived_t>::from_hex(const std::string& hex)
+template <typename storage_t, typename serialize_t>
+base_hash<storage_t, serialize_t> base_hash<storage_t, serialize_t>::from_hex(const std::string& hex)
 {
     std::vector<serialize_t> vec = crypto::from_hex<serialize_t>(hex);
-    return derived_t(vec.data(), vec.size());
+    return base_hash<storage_t, serialize_t>(vec.data(), vec.size());
 }
 
 #define OPENSSL_HASH(type) type##_CTX ctx; \
@@ -131,11 +131,11 @@ derived_t base_hash<storage_t, serialize_t, derived_t>::from_hex(const std::stri
                            CLIMB_THROW_IF(1 != type##_Update(&ctx, static_cast<const void*>(data), sizeof(serialize_t) * size)); \
                            CLIMB_THROW_IF(1 != type##_Final(reinterpret_cast<unsigned char*>(hash.data()), &ctx));
 
-template <typename storage_t, typename serialize_t, class derived_t>
+template <typename storage_t, typename serialize_t>
 template <class V>
-derived_t base_hash<storage_t, serialize_t, derived_t>::hash(const V* data, size_t size)
+base_hash<storage_t, serialize_t> base_hash<storage_t, serialize_t>::hash(const V* data, size_t size)
 {
-    derived_t hash;
+    base_hash<storage_t, serialize_t> hash;
 
     if constexpr (sizeof(storage_t) == 20) { 
         OPENSSL_HASH(RIPEMD160);
