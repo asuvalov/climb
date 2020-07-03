@@ -10,7 +10,7 @@ branches:
 
 matrix:
   include:
-    - env: COMPILER=g++-8 BUILD=Release STANDARD=17
+    - env: COMPILER=g++-8 BUILD=Release STANDARD=17 CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8
       compiler: gcc
       addons:
         apt:
