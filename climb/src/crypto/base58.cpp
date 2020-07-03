@@ -93,5 +93,15 @@ std::vector<char> decode_base58(const std::string& base58)
     return decode_base58(base58.data(), base58.size());
 }
 
+std::string encode_base58_check(const unsigned char* data, size_t size)
+{
+    return std::string();
+}
+
+std::vector<char> decode_base58_check(const std::string& base58)
+{
+    return std::vector<char>();
+}
+
 } // crypto
 
