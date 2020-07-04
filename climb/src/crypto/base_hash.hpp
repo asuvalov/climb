@@ -84,7 +84,7 @@ public:
 
     template <class V>
     static base_hash<storage_t, serialize_t> hash(const std::vector<V>& data) {
-        return hash(reinterpret_cast<const unsigned char*>(data.data()), data.size()*sizeof(storage_t));
+        return hash(reinterpret_cast<const unsigned char*>(data.data()), data.size());
     }
 
     static base_hash<storage_t, serialize_t> hash(const std::string& data) {
@@ -93,6 +93,12 @@ public:
 
     template <class V>
     static base_hash<storage_t, serialize_t> hash(const V* data, size_t size);
+
+    template <class V>
+    static base_hash<storage_t, serialize_t> dhash(const V* data, size_t size) {
+        auto h = hash(data, size);
+        return hash(h.data(), h.size());
+    }
 
 protected:
     storage_t _hash;
@@ -151,4 +157,3 @@ base_hash<storage_t, serialize_t> base_hash<storage_t, serialize_t>::hash(const 
 }
 
 } // crypto
-

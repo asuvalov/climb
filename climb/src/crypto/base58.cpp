@@ -1,4 +1,5 @@
 #include <crypto/base58.hpp>
+#include <crypto/hash.hpp>
 #include <elliptic/bignum.hpp>
 #include <elliptic/exception.hpp>
 
@@ -6,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 
 namespace crypto
 {
@@ -93,5 +95,29 @@ std::vector<char> decode_base58(const std::string& base58)
     return decode_base58(base58.data(), base58.size());
 }
 
-} // crypto
+std::string encode_base58_check(unsigned char version, const unsigned char* data, size_t size)
+{
+    const size_t checksum_size = 4U;
+    std::vector<unsigned char> address;
+    address.reserve(sizeof(version) + size + checksum_size);
 
+    address.push_back(version);
+    std::copy(data, data + size, std::back_inserter(address));
+
+    const auto& dsha256 = crypto::usha256::dhash(address.data(), address.size());
+    std::copy(dsha256.data(), dsha256.data() + checksum_size, std::back_inserter(address));
+
+    return encode_base58(address.data(), address.size());
+}
+
+std::pair<unsigned char, std::vector<char>> decode_base58_check(const std::string& base58)
+{
+    const auto& data = decode_base58(base58.c_str(), base58.size());
+    const size_t checksum_size = 4U;
+    const size_t payload_size = data.size() - checksum_size;
+    const auto& dsha256 = crypto::sha256::dhash(data.data(), payload_size);
+    CLIMB_THROW_IF(strncmp(dsha256.data(), data.data() + payload_size, checksum_size) != 0)
+    return {data[0], std::vector<char>(data.data() + 1, data.data() + payload_size)};
+}
+
+} // crypto

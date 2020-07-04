@@ -1,6 +1,7 @@
 file(GLOB SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/crypto/*.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/elliptic/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/btc/*.cpp"
 )
 
 add_library(climb STATIC ${SOURCES})
