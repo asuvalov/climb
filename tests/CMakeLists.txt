@@ -21,3 +21,14 @@ target_include_directories( elliptic_test PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/data"
   "${CMAKE_SOURCE_DIR}/src"
 )
+
+# btc tests
+
+file(GLOB BTC_TESTS "${CMAKE_SOURCE_DIR}/tests/btc/*.cpp")
+add_executable(btc_test ${BTC_TESTS})
+target_link_libraries( btc_test PRIVATE climb)
+target_include_directories( btc_test PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}/data"
+  "${CMAKE_SOURCE_DIR}/src"
+)
